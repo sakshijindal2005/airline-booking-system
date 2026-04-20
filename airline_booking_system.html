@@ -1,0 +1,1427 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SkyBook – Airline Booking System</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --navy:#0a1628;--navy2:#132040;--navy3:#1e3058;
+    --sky:#2c7be5;--sky2:#1a5fc4;--sky3:#5ba4ff;
+    --gold:#f5a623;--gold2:#e8941a;
+    --mint:#00c9a7;--red:#e84040;
+    --bg:#f0f4fa;--bg2:#fff;--card:#fff;
+    --txt:#0a1628;--txt2:#4a5a7a;--txt3:#8899bb;
+    --border:#dde3ef;--border2:#c8d2e8;
+    --r:14px;--r2:10px;--r3:6px;
+    --shadow:0 2px 12px rgba(10,22,40,.08);
+    --shadow2:0 8px 32px rgba(10,22,40,.12);
+  }
+  @media(prefers-color-scheme:dark){
+    :root{
+      --bg:#080f1e;--bg2:#0f1a2e;--card:#152035;
+      --txt:#e8edf8;--txt2:#8899bb;--txt3:#4a5a7a;
+      --border:#1e3058;--border2:#2a4070;
+      --shadow:0 2px 12px rgba(0,0,0,.3);
+      --shadow2:0 8px 32px rgba(0,0,0,.4);
+    }
+  }
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);font-size:15px;line-height:1.6;min-height:100vh}
+  h1,h2,h3,h4{font-family:'Syne',sans-serif;font-weight:600}
+  /* ── NAV ── */
+  nav{background:var(--navy);padding:0 24px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+  .logo{color:#fff;font-family:'Syne',sans-serif;font-size:20px;font-weight:700;display:flex;align-items:center;gap:8px}
+  .logo-icon{width:32px;height:32px;background:var(--sky);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+  nav-links{display:flex;gap:4px}
+  .nav-btn{background:none;border:none;color:rgba(255,255,255,.7);font-family:'DM Sans',sans-serif;font-size:14px;padding:6px 14px;border-radius:var(--r3);cursor:pointer;transition:.2s}
+  .nav-btn:hover,.nav-btn.active{background:rgba(255,255,255,.12);color:#fff}
+  .nav-right{display:flex;align-items:center;gap:8px}
+  .user-chip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border-radius:20px;padding:4px 12px 4px 6px}
+  .avatar{width:28px;height:28px;border-radius:50%;background:var(--sky);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff}
+  /* ── LAYOUT ── */
+  .app{max-width:1100px;margin:0 auto;padding:24px 20px}
+  .page{display:none}.page.active{display:block}
+  /* ── HERO ── */
+  .hero{background:linear-gradient(135deg,var(--navy) 0%,var(--navy3) 100%);border-radius:24px;padding:48px 40px;margin-bottom:28px;position:relative;overflow:hidden}
+  .hero::before{content:'';position:absolute;right:-60px;top:-60px;width:300px;height:300px;background:radial-gradient(circle,rgba(44,123,229,.3) 0%,transparent 70%);pointer-events:none}
+  .hero-title{color:#fff;font-size:36px;line-height:1.2;margin-bottom:8px}
+  .hero-sub{color:rgba(255,255,255,.6);font-size:16px;margin-bottom:32px}
+  .search-box{background:var(--bg2);border-radius:var(--r);padding:20px;box-shadow:var(--shadow2)}
+  .search-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:12px;align-items:end}
+  .field{display:flex;flex-direction:column;gap:5px}
+  .field label{font-size:12px;font-weight:500;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px}
+  .field input,.field select{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r2);padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--txt);outline:none;transition:.2s;width:100%}
+  .field input:focus,.field select:focus{border-color:var(--sky);background:var(--bg2)}
+  .btn{background:var(--sky);color:#fff;border:none;border-radius:var(--r2);padding:11px 22px;font-family:'Syne',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:.2s;white-space:nowrap}
+  .btn:hover{background:var(--sky2);transform:translateY(-1px)}
+  .btn:active{transform:scale(.98)}
+  .btn.gold{background:var(--gold)}.btn.gold:hover{background:var(--gold2)}
+  .btn.red{background:var(--red)}
+  .btn.ghost{background:transparent;border:1.5px solid var(--border);color:var(--txt);font-family:'DM Sans',sans-serif}
+  .btn.ghost:hover{border-color:var(--sky);color:var(--sky);background:transparent}
+  .btn.sm{padding:7px 14px;font-size:13px}
+  /* ── CARDS ── */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+  .card.accent-blue{border-top:3px solid var(--sky)}
+  .card.accent-gold{border-top:3px solid var(--gold)}
+  .card.accent-mint{border-top:3px solid var(--mint)}
+  /* ── FLIGHT RESULTS ── */
+  .flight-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);padding:18px 22px;margin-bottom:12px;display:grid;grid-template-columns:1fr auto 1fr auto 120px;gap:16px;align-items:center;transition:.2s;cursor:pointer}
+  .flight-card:hover{border-color:var(--sky);box-shadow:var(--shadow2)}
+  .flight-card.selected{border-color:var(--sky);background:rgba(44,123,229,.04)}
+  .airline-logo{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;font-family:'Syne',sans-serif}
+  .time-big{font-size:22px;font-weight:600;font-family:'Syne',sans-serif}
+  .city-code{font-size:12px;color:var(--txt3);font-weight:500}
+  .route-line{display:flex;align-items:center;gap:8px;color:var(--txt3);font-size:13px}
+  .line{flex:1;height:1px;background:var(--border2);position:relative}
+  .line::after{content:'✈';position:absolute;top:-9px;left:50%;transform:translateX(-50%);font-size:14px;background:var(--card);padding:0 4px}
+  .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500}
+  .badge.blue{background:#dbeafe;color:#1e40af}.badge.green{background:#d1fae5;color:#065f46}
+  .badge.orange{background:#fef3c7;color:#92400e}.badge.red{background:#fee2e2;color:#991b1b}
+  @media(prefers-color-scheme:dark){
+    .badge.blue{background:rgba(44,123,229,.2);color:#93c5fd}
+    .badge.green{background:rgba(0,201,167,.15);color:#6ee7b7}
+    .badge.orange{background:rgba(245,166,35,.15);color:#fcd34d}
+    .badge.red{background:rgba(232,64,64,.15);color:#fca5a5}
+  }
+  .price-big{font-size:24px;font-weight:700;color:var(--sky);font-family:'Syne',sans-serif}
+  /* ── FILTERS ── */
+  .filters{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+  .filter-chip{background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:6px 14px;font-size:13px;cursor:pointer;transition:.2s;font-weight:500}
+  .filter-chip:hover,.filter-chip.active{background:var(--sky);border-color:var(--sky);color:#fff}
+  /* ── SEAT MAP ── */
+  .seat-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;max-width:380px;margin:0 auto}
+  .seat{width:100%;aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;cursor:pointer;transition:.2s;border:1.5px solid transparent}
+  .seat.avail{background:#e8f4ff;border-color:#bdd8f7;color:#1e5fb5}
+  .seat.avail:hover{background:var(--sky);color:#fff;border-color:var(--sky);transform:scale(1.05)}
+  .seat.taken{background:var(--border);color:var(--txt3);cursor:not-allowed}
+  .seat.selected{background:var(--sky);color:#fff;border-color:var(--sky2)}
+  .seat.business{background:#fef9ee;border-color:#f5d98b;color:#92400e}
+  .seat.business.avail{background:#fef9ee;border-color:#f5d98b;color:#92400e}
+  .seat.business.avail:hover,.seat.business.selected{background:var(--gold);color:#fff;border-color:var(--gold2)}
+  .seat.aisle{background:transparent;border:none;cursor:default}
+  @media(prefers-color-scheme:dark){
+    .seat.avail{background:rgba(44,123,229,.15);border-color:rgba(44,123,229,.35);color:#93c5fd}
+    .seat.business{background:rgba(245,166,35,.12);border-color:rgba(245,166,35,.3);color:#fcd34d}
+    .seat.taken{background:var(--border);color:var(--txt3)}
+  }
+  /* ── TABLES ── */
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--txt3);font-weight:500;padding:8px 12px;border-bottom:1px solid var(--border)}
+  td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:14px}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:rgba(44,123,229,.03)}
+  /* ── AUTH ── */
+  .auth-wrap{min-height:80vh;display:flex;align-items:center;justify-content:center;padding:20px}
+  .auth-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px;width:100%;max-width:420px;box-shadow:var(--shadow2)}
+  .auth-card h2{font-size:26px;margin-bottom:4px}
+  .auth-card p{color:var(--txt2);margin-bottom:28px}
+  .form-group{margin-bottom:16px}
+  .form-group label{display:block;font-size:13px;font-weight:500;color:var(--txt2);margin-bottom:6px}
+  .form-group input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r2);padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--txt);outline:none;transition:.2s}
+  .form-group input:focus{border-color:var(--sky)}
+  .auth-tabs{display:flex;background:var(--bg);border-radius:10px;padding:4px;margin-bottom:28px;gap:4px}
+  .auth-tab{flex:1;text-align:center;padding:8px;border-radius:7px;font-size:14px;font-weight:500;cursor:pointer;transition:.2s;border:none;background:none;color:var(--txt2);font-family:'DM Sans',sans-serif}
+  .auth-tab.active{background:var(--card);color:var(--txt);box-shadow:var(--shadow)}
+  /* ── DASHBOARD ── */
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+  .stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px}
+  .stat-num{font-size:28px;font-weight:700;font-family:'Syne',sans-serif}
+  .stat-label{font-size:13px;color:var(--txt2);margin-top:2px}
+  .stat-trend{font-size:12px;margin-top:6px;display:flex;align-items:center;gap:4px}
+  .trend-up{color:var(--mint)}.trend-dn{color:var(--red)}
+  /* ── ETL ── */
+  .etl-step{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:12px}
+  .etl-step h4{display:flex;align-items:center;gap:10px;font-size:15px;margin-bottom:10px}
+  .step-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+  pre{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:12px;overflow-x:auto;color:var(--txt2);font-family:'DM Mono',monospace,monospace;line-height:1.6}
+  .code-kw{color:#7c3aed}.code-fn{color:#0369a1}.code-str{color:#065f46}.code-cmt{color:var(--txt3)}
+  /* ── SCHEMA ── */
+  .schema-table{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:12px}
+  .schema-header{background:var(--navy);color:#fff;padding:10px 16px;font-family:'Syne',sans-serif;font-size:14px;display:flex;align-items:center;gap:8px}
+  .schema-field{display:flex;padding:8px 16px;border-bottom:1px solid var(--border);font-size:13px;gap:12px}
+  .schema-field:last-child{border-bottom:none}
+  .field-name{color:var(--sky);font-weight:500;min-width:140px;font-family:monospace}
+  .field-type{color:var(--txt3);min-width:90px}
+  .field-desc{color:var(--txt2)}
+  .pk-badge{font-size:10px;background:#fff3;border-radius:4px;padding:1px 5px;color:rgba(255,255,255,.8);font-weight:600}
+  /* ── BOOKING CONFIRM ── */
+  .confirm-card{background:linear-gradient(135deg,var(--navy) 0%,var(--navy3) 100%);border-radius:20px;padding:32px;color:#fff;text-align:center;margin-bottom:20px}
+  .confirm-icon{font-size:48px;margin-bottom:12px}
+  .ticket{background:var(--card);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow2)}
+  .ticket-top{background:var(--navy);color:#fff;padding:20px 24px;display:flex;justify-content:space-between;align-items:center}
+  .ticket-body{padding:20px 24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+  .ticket-field label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--txt3);display:block;margin-bottom:3px}
+  .ticket-field span{font-size:16px;font-weight:500}
+  .ticket-divider{border:none;border-top:2px dashed var(--border);margin:0 24px}
+  /* ── TABS ── */
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:20px}
+  .tab{padding:10px 18px;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--txt2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:.2s;font-weight:500}
+  .tab.active{color:var(--sky);border-bottom-color:var(--sky)}
+  .tab:hover:not(.active){color:var(--txt);border-bottom-color:var(--border2)}
+  .tab-pane{display:none}.tab-pane.active{display:block}
+  /* ── MODAL ── */
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
+  .modal{background:var(--card);border-radius:20px;padding:28px;max-width:520px;width:100%;box-shadow:var(--shadow2);max-height:90vh;overflow-y:auto}
+  .modal-title{font-size:20px;font-weight:600;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+  .close-btn{background:none;border:none;font-size:22px;cursor:pointer;color:var(--txt3);line-height:1;padding:2px}
+  /* ── MISC ── */
+  .section-title{font-size:20px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+  .section-title span{font-size:13px;font-weight:400;color:var(--txt2)}
+  .empty-state{text-align:center;padding:48px 20px;color:var(--txt3)}
+  .empty-state .icon{font-size:48px;margin-bottom:12px}
+  .divider{border:none;border-top:1px solid var(--border);margin:20px 0}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:13px}
+  .flex{display:flex}.gap-2{gap:8px}.gap-3{gap:12px}.gap-4{gap:16px}
+  .justify-between{justify-content:space-between}.align-center{align-items:center}
+  .mt-1{margin-top:8px}.mt-2{margin-top:16px}.mt-3{margin-top:24px}
+  .mb-1{margin-bottom:8px}.mb-2{margin-bottom:16px}.mb-3{margin-bottom:24px}
+  .text-sm{font-size:13px}.text-xs{font-size:12px}.text-muted{color:var(--txt2)}.text-sky{color:var(--sky)}
+  .w-full{width:100%}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:14px 20px;border-radius:12px;font-size:14px;z-index:300;opacity:0;transition:.3s;transform:translateY(8px);pointer-events:none;display:flex;align-items:center;gap:10px}
+  .toast.show{opacity:1;transform:translateY(0)}
+  /* ── chart canvas wrapper ── */
+  .ch-wrap{position:relative;height:240px}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo"><div class="logo-icon">✈</div> SkyBook</div>
+  <div style="display:flex;gap:2px" id="nav-links">
+    <button class="nav-btn active" onclick="showPage('search')">Search Flights</button>
+    <button class="nav-btn" onclick="showPage('bookings')">My Bookings</button>
+    <button class="nav-btn" id="admin-nav-btn" onclick="showPage('admin')" style="display:none">Admin</button>
+    <button class="nav-btn" onclick="showPage('analytics')">Analytics</button>
+    <button class="nav-btn" onclick="showPage('pipeline')">ETL/ELT Pipeline</button>
+    <button class="nav-btn" onclick="showPage('schema')">DB Schema</button>
+  </div>
+  <div class="nav-right">
+    <div id="auth-area">
+      <button class="btn sm ghost" onclick="showPage('auth')" style="color:rgba(255,255,255,.8);border-color:rgba(255,255,255,.25)">Sign In</button>
+    </div>
+  </div>
+</nav>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ==================== PAGE: AUTH ==================== -->
+<div id="page-auth" class="page">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchAuthTab('login',this)">Sign In</button>
+        <button class="auth-tab" onclick="switchAuthTab('register',this)">Register</button>
+      </div>
+      <!-- Login -->
+      <div id="auth-login">
+        <h2>Welcome back</h2>
+        <p>Sign in to manage your bookings</p>
+        <div class="form-group"><label>Email</label><input id="login-email" type="email" value="user@skybook.com" placeholder="you@email.com"/></div>
+        <div class="form-group"><label>Password</label><input id="login-pass" type="password" value="password" placeholder="••••••••"/></div>
+        <button class="btn w-full mt-2" onclick="doLogin()">Sign In</button>
+        <div class="divider"></div>
+        <p class="text-sm text-muted" style="text-align:center">Demo accounts: <strong>admin@skybook.com</strong> / admin, <strong>user@skybook.com</strong> / password</p>
+      </div>
+      <!-- Register -->
+      <div id="auth-register" style="display:none">
+        <h2>Create account</h2>
+        <p>Join SkyBook and book your next flight</p>
+        <div class="grid-2">
+          <div class="form-group"><label>First Name</label><input id="reg-fname" placeholder="Riya"/></div>
+          <div class="form-group"><label>Last Name</label><input id="reg-lname" placeholder="Sharma"/></div>
+        </div>
+        <div class="form-group"><label>Email</label><input id="reg-email" type="email" placeholder="you@email.com"/></div>
+        <div class="form-group"><label>Password</label><input id="reg-pass" type="password" placeholder="••••••••"/></div>
+        <button class="btn w-full mt-2" onclick="doRegister()">Create Account</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE: SEARCH ==================== -->
+<div id="page-search" class="page active">
+  <div class="app">
+    <!-- Hero Search -->
+    <div class="hero">
+      <h1 class="hero-title">Find your perfect flight</h1>
+      <p class="hero-sub">Search across hundreds of routes — best prices, real-time availability</p>
+      <div class="search-box">
+        <div class="search-row">
+          <div class="field">
+            <label>From</label>
+            <select id="src">
+              <option value="DEL">Delhi (DEL)</option><option value="BOM">Mumbai (BOM)</option>
+              <option value="BLR">Bengaluru (BLR)</option><option value="MAA">Chennai (MAA)</option>
+              <option value="HYD">Hyderabad (HYD)</option><option value="CCU">Kolkata (CCU)</option>
+              <option value="JAI">Jaipur (JAI)</option><option value="AMD">Ahmedabad (AMD)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>To</label>
+            <select id="dst">
+              <option value="BOM">Mumbai (BOM)</option><option value="DEL">Delhi (DEL)</option>
+              <option value="BLR">Bengaluru (BLR)</option><option value="MAA">Chennai (MAA)</option>
+              <option value="HYD">Hyderabad (HYD)</option><option value="CCU">Kolkata (CCU)</option>
+              <option value="GOI">Goa (GOI)</option><option value="AMD">Ahmedabad (AMD)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Date</label>
+            <input type="date" id="travel-date" value="2025-05-15"/>
+          </div>
+          <div class="field">
+            <label>Passengers</label>
+            <select id="pax">
+              <option value="1">1 Adult</option><option value="2">2 Adults</option>
+              <option value="3">3 Adults</option><option value="4">4 Adults</option>
+            </select>
+          </div>
+          <button class="btn" onclick="searchFlights()">Search</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="results-section" style="display:none">
+      <div class="flex justify-between align-center mb-2">
+        <div class="section-title">Available Flights <span id="results-count"></span></div>
+        <div class="flex gap-2">
+          <button class="filter-chip active" onclick="filterFlights('all',this)">All</button>
+          <button class="filter-chip" onclick="filterFlights('morning',this)">Morning</button>
+          <button class="filter-chip" onclick="filterFlights('evening',this)">Evening</button>
+          <button class="filter-chip" onclick="sortPrice(this)">↑ Price</button>
+        </div>
+      </div>
+      <div id="flight-list"></div>
+    </div>
+
+    <!-- Seat Selection -->
+    <div id="seat-section" style="display:none">
+      <div class="flex align-center gap-3 mb-3">
+        <button class="btn ghost sm" onclick="hideSeatSection()">← Back</button>
+        <h2>Select Your Seat</h2>
+      </div>
+      <div class="grid-2" style="gap:24px">
+        <div>
+          <div class="card mb-2" id="selected-flight-info"></div>
+          <!-- Seat legend -->
+          <div class="flex gap-3 mb-2">
+            <div class="flex align-center gap-2 text-sm"><div style="width:16px;height:16px;background:#fef9ee;border:1.5px solid #f5d98b;border-radius:4px"></div> Business</div>
+            <div class="flex align-center gap-2 text-sm"><div style="width:16px;height:16px;background:#e8f4ff;border:1.5px solid #bdd8f7;border-radius:4px"></div> Economy</div>
+            <div class="flex align-center gap-2 text-sm"><div style="width:16px;height:16px;background:var(--border);border-radius:4px"></div> Taken</div>
+            <div class="flex align-center gap-2 text-sm"><div style="width:16px;height:16px;background:var(--sky);border-radius:4px"></div> Selected</div>
+          </div>
+          <div class="card">
+            <div style="text-align:center;margin-bottom:14px">
+              <div style="background:var(--bg);border-radius:8px;padding:6px 12px;display:inline-block;font-size:13px;color:var(--txt2)">Nose ✈</div>
+            </div>
+            <div style="font-size:11px;text-align:center;color:var(--txt3);margin-bottom:10px">A&nbsp;&nbsp;&nbsp;B&nbsp;&nbsp;&nbsp;C &nbsp;&nbsp; D&nbsp;&nbsp;&nbsp;E&nbsp;&nbsp;&nbsp;F</div>
+            <div class="seat-grid" id="seat-map"></div>
+          </div>
+        </div>
+        <div>
+          <div class="card accent-blue">
+            <h3 class="mb-2">Booking Summary</h3>
+            <div id="booking-summary"></div>
+            <div class="divider"></div>
+            <div class="flex justify-between align-center mt-1 mb-2">
+              <span class="text-muted">Seat</span>
+              <span id="chosen-seat" style="font-weight:600">Not selected</span>
+            </div>
+            <div class="flex justify-between align-center mb-2">
+              <span class="text-muted">Class</span>
+              <span id="chosen-class" style="font-weight:600">—</span>
+            </div>
+            <div class="flex justify-between align-center mb-3">
+              <span style="font-weight:600">Total</span>
+              <span id="total-price" class="text-sky" style="font-size:22px;font-weight:700">₹—</span>
+            </div>
+            <button class="btn w-full" id="confirm-btn" onclick="confirmBooking()" disabled style="opacity:.5">Confirm Booking</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE: BOOKINGS ==================== -->
+<div id="page-bookings" class="page">
+  <div class="app">
+    <div class="section-title">My Bookings</div>
+    <div id="bookings-list"></div>
+  </div>
+</div>
+
+<!-- ==================== PAGE: ADMIN ==================== -->
+<div id="page-admin" class="page">
+  <div class="app">
+    <div class="flex justify-between align-center mb-3">
+      <div class="section-title">Admin Dashboard</div>
+      <button class="btn gold" onclick="openAddFlight()">+ Add Flight</button>
+    </div>
+    <div class="stats-grid" id="admin-stats"></div>
+    <div class="card">
+      <div class="flex justify-between align-center mb-2">
+        <h3>All Flights</h3>
+        <input type="text" id="admin-search" placeholder="Search flights…" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:13px;color:var(--txt);outline:none;width:200px" oninput="renderAdminFlights()"/>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Flight</th><th>Route</th><th>Departure</th><th>Airline</th><th>Price</th><th>Seats</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="admin-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE: ANALYTICS ==================== -->
+<div id="page-analytics" class="page">
+  <div class="app">
+    <div class="section-title">Analytics Dashboard</div>
+    <div class="stats-grid mb-3" id="analytics-stats"></div>
+    <div class="grid-2 mb-3">
+      <div class="card accent-blue">
+        <div class="text-sm text-muted mb-2" style="font-weight:500;text-transform:uppercase;letter-spacing:.5px">Revenue Trend (2025)</div>
+        <div class="ch-wrap"><canvas id="chart-revenue" role="img" aria-label="Monthly revenue trend 2025"></canvas></div>
+      </div>
+      <div class="card accent-gold">
+        <div class="text-sm text-muted mb-2" style="font-weight:500;text-transform:uppercase;letter-spacing:.5px">Bookings by Airline</div>
+        <div class="ch-wrap"><canvas id="chart-airline" role="img" aria-label="Bookings per airline"></canvas></div>
+      </div>
+    </div>
+    <div class="grid-2 mb-3">
+      <div class="card accent-mint">
+        <div class="text-sm text-muted mb-2" style="font-weight:500;text-transform:uppercase;letter-spacing:.5px">Most Popular Routes</div>
+        <div class="ch-wrap"><canvas id="chart-routes" role="img" aria-label="Popular routes bar chart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="text-sm text-muted mb-2" style="font-weight:500;text-transform:uppercase;letter-spacing:.5px">Peak Booking Hours</div>
+        <div class="ch-wrap"><canvas id="chart-hours" role="img" aria-label="Booking activity by hour"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE: PIPELINE ==================== -->
+<div id="page-pipeline" class="page">
+  <div class="app">
+    <div class="section-title">ETL / ELT Pipeline <span>Data Engineering Core</span></div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('etl',this)">ETL (Pandas)</button>
+      <button class="tab" onclick="switchTab('elt',this)">ELT (SQL)</button>
+      <button class="tab" onclick="switchTab('compare',this)">Comparison</button>
+      <button class="tab" onclick="switchTab('arch',this)">Architecture</button>
+    </div>
+
+    <!-- ETL -->
+    <div id="tab-etl" class="tab-pane active">
+      <div class="etl-step">
+        <h4><div class="step-num" style="background:var(--sky)">E</div>Extract — Raw Data Sources</h4>
+        <pre><span class="code-cmt"># Extract raw airline data</span>
+<span class="code-kw">import</span> pandas <span class="code-kw">as</span> pd
+<span class="code-kw">import</span> sqlite3, json, datetime
+
+<span class="code-fn">def</span> <span class="code-fn">extract_all</span>():
+    conn = sqlite3.connect(<span class="code-str">"skybook.db"</span>)
+    flights_df   = pd.read_sql(<span class="code-str">"SELECT * FROM flights"</span>, conn)
+    users_df     = pd.read_sql(<span class="code-str">"SELECT * FROM users"</span>, conn)
+    bookings_df  = pd.read_sql(<span class="code-str">"SELECT * FROM bookings"</span>, conn)
+    payments_df  = pd.read_sql(<span class="code-str">"SELECT * FROM payments"</span>, conn)
+    conn.close()
+    <span class="code-kw">return</span> flights_df, users_df, bookings_df, payments_df</pre>
+      </div>
+      <div class="etl-step">
+        <h4><div class="step-num" style="background:var(--gold)">T</div>Transform — Clean & Normalize</h4>
+        <pre><span class="code-fn">def</span> <span class="code-fn">transform_flights</span>(df):
+    <span class="code-cmt"># Handle missing values</span>
+    df[<span class="code-str">"price"</span>].fillna(df[<span class="code-str">"price"</span>].median(), inplace=<span class="code-kw">True</span>)
+    df[<span class="code-str">"airline"</span>].fillna(<span class="code-str">"Unknown"</span>, inplace=<span class="code-kw">True</span>)
+
+    <span class="code-cmt"># Normalize prices (Min-Max scaling)</span>
+    df[<span class="code-str">"price_normalized"</span>] = (df[<span class="code-str">"price"</span>] - df[<span class="code-str">"price"</span>].min()) / \
+                              (df[<span class="code-str">"price"</span>].max() - df[<span class="code-str">"price"</span>].min())
+
+    <span class="code-cmt"># Standardize airport codes (uppercase, strip whitespace)</span>
+    df[<span class="code-str">"origin"</span>]      = df[<span class="code-str">"origin"</span>].str.strip().str.upper()
+    df[<span class="code-str">"destination"</span>] = df[<span class="code-str">"destination"</span>].str.strip().str.upper()
+
+    <span class="code-cmt"># Convert timestamps to UTC datetime</span>
+    df[<span class="code-str">"departure_dt"</span>] = pd.to_datetime(df[<span class="code-str">"departure_time"</span>], utc=<span class="code-kw">True</span>)
+    df[<span class="code-str">"arrival_dt"</span>]   = pd.to_datetime(df[<span class="code-str">"arrival_time"</span>],   utc=<span class="code-kw">True</span>)
+
+    <span class="code-cmt"># Derive duration in minutes</span>
+    df[<span class="code-str">"duration_min"</span>] = (df[<span class="code-str">"arrival_dt"</span>] - df[<span class="code-str">"departure_dt"</span>]) \
+                           .dt.total_seconds() / 60
+    <span class="code-kw">return</span> df</pre>
+      </div>
+      <div class="etl-step">
+        <h4><div class="step-num" style="background:var(--mint)">L</div>Load — Into Relational Database</h4>
+        <pre><span class="code-fn">def</span> <span class="code-fn">load_to_db</span>(flights_clean, bookings_clean):
+    conn = sqlite3.connect(<span class="code-str">"skybook_warehouse.db"</span>)
+    flights_clean.to_sql(<span class="code-str">"dim_flights"</span>,  conn, if_exists=<span class="code-str">"replace"</span>, index=<span class="code-kw">False</span>)
+    bookings_clean.to_sql(<span class="code-str">"fact_bookings"</span>, conn, if_exists=<span class="code-str">"replace"</span>, index=<span class="code-kw">False</span>)
+    conn.commit(); conn.close()
+    <span class="code-fn">print</span>(<span class="code-str">f"✓ Loaded {len(flights_clean)} flights, {len(bookings_clean)} bookings"</span>)
+
+<span class="code-cmt"># Run the full ETL pipeline</span>
+flights_df, users_df, bookings_df, payments_df = extract_all()
+flights_clean   = transform_flights(flights_df)
+bookings_clean  = transform_bookings(bookings_df)
+load_to_db(flights_clean, bookings_clean)</pre>
+      </div>
+    </div>
+
+    <!-- ELT -->
+    <div id="tab-elt" class="tab-pane">
+      <div class="etl-step">
+        <h4><div class="step-num" style="background:var(--sky)">E</div>Extract & Load — Raw into staging tables</h4>
+        <pre><span class="code-cmt">-- Create raw staging tables (load data as-is first)</span>
+<span class="code-kw">CREATE TABLE</span> stg_flights_raw (
+    flight_no    TEXT, origin TEXT, destination TEXT,
+    departure    TEXT, arrival TEXT, price TEXT,
+    airline      TEXT, seats_total TEXT, seats_avail TEXT
+);
+
+<span class="code-cmt">-- Bulk load from CSV (SQLite CLI / Python csv import)</span>
+.mode csv
+.import raw_flights.csv stg_flights_raw</pre>
+      </div>
+      <div class="etl-step">
+        <h4><div class="step-num" style="background:var(--gold)">T</div>Transform — SQL inside the database</h4>
+        <pre><span class="code-cmt">-- Clean and transform directly with SQL</span>
+<span class="code-kw">CREATE TABLE</span> dim_flights <span class="code-kw">AS</span>
+<span class="code-kw">SELECT</span>
+    flight_no,
+    TRIM(UPPER(origin))      <span class="code-kw">AS</span> origin,
+    TRIM(UPPER(destination)) <span class="code-kw">AS</span> destination,
+    <span class="code-cmt">-- Parse timestamp</span>
+    datetime(departure)      <span class="code-kw">AS</span> departure_dt,
+    datetime(arrival)        <span class="code-kw">AS</span> arrival_dt,
+    <span class="code-cmt">-- Cast & default missing prices</span>
+    COALESCE(CAST(price <span class="code-kw">AS</span> REAL), (
+        <span class="code-kw">SELECT</span> AVG(CAST(price <span class="code-kw">AS</span> REAL)) <span class="code-kw">FROM</span> stg_flights_raw
+        <span class="code-kw">WHERE</span> price <span class="code-kw">IS NOT NULL</span>
+    ))                       <span class="code-kw">AS</span> price,
+    <span class="code-cmt">-- Normalize price 0-1</span>
+    (CAST(price <span class="code-kw">AS</span> REAL) - MIN(CAST(price <span class="code-kw">AS</span> REAL)) <span class="code-kw">OVER</span>()) /
+    NULLIF((MAX(CAST(price <span class="code-kw">AS</span> REAL)) <span class="code-kw">OVER</span>() -
+             MIN(CAST(price <span class="code-kw">AS</span> REAL)) <span class="code-kw">OVER</span>()), 0) <span class="code-kw">AS</span> price_normalized,
+    CAST(seats_total <span class="code-kw">AS</span> INT) <span class="code-kw">AS</span> seats_total,
+    CAST(seats_avail <span class="code-kw">AS</span> INT) <span class="code-kw">AS</span> seats_avail,
+    <span class="code-cmt">-- Derive duration in minutes</span>
+    CAST((julianday(arrival) - julianday(departure)) * 1440 <span class="code-kw">AS</span> INT) <span class="code-kw">AS</span> duration_min
+<span class="code-kw">FROM</span> stg_flights_raw
+<span class="code-kw">WHERE</span> flight_no <span class="code-kw">IS NOT NULL</span>;</pre>
+      </div>
+      <div class="etl-step">
+        <h4><div class="step-num" style="background:var(--mint)">A</div>Analytical Queries — Revenue & Routes</h4>
+        <pre><span class="code-cmt">-- Most popular routes</span>
+<span class="code-kw">SELECT</span> origin || <span class="code-str">' → '</span> || destination <span class="code-kw">AS</span> route,
+       COUNT(*) <span class="code-kw">AS</span> bookings,
+       ROUND(SUM(amount), 2) <span class="code-kw">AS</span> total_revenue
+<span class="code-kw">FROM</span> fact_bookings b
+<span class="code-kw">JOIN</span> dim_flights f <span class="code-kw">ON</span> b.flight_id = f.id
+<span class="code-kw">GROUP BY</span> route <span class="code-kw">ORDER BY</span> bookings <span class="code-kw">DESC LIMIT</span> 10;
+
+<span class="code-cmt">-- Revenue per month (trend)</span>
+<span class="code-kw">SELECT</span> strftime(<span class="code-str">'%Y-%m'</span>, booked_at) <span class="code-kw">AS</span> month,
+       COUNT(*) <span class="code-kw">AS</span> total_bookings,
+       ROUND(SUM(amount), 2)          <span class="code-kw">AS</span> revenue
+<span class="code-kw">FROM</span> fact_bookings
+<span class="code-kw">GROUP BY</span> month <span class="code-kw">ORDER BY</span> month;
+
+<span class="code-cmt">-- Peak booking hours</span>
+<span class="code-kw">SELECT</span> CAST(strftime(<span class="code-str">'%H'</span>, booked_at) <span class="code-kw">AS</span> INT) <span class="code-kw">AS</span> hour,
+       COUNT(*) <span class="code-kw">AS</span> bookings
+<span class="code-kw">FROM</span> fact_bookings
+<span class="code-kw">GROUP BY</span> hour <span class="code-kw">ORDER BY</span> hour;</pre>
+      </div>
+    </div>
+
+    <!-- Comparison -->
+    <div id="tab-compare" class="tab-pane">
+      <div class="ch-wrap mb-3" style="height:180px"><canvas id="chart-compare" role="img" aria-label="ETL vs ELT performance comparison"></canvas></div>
+      <div class="grid-2">
+        <div class="card accent-blue">
+          <h4 class="mb-2">ETL (Pandas)</h4>
+          <table>
+            <tbody>
+              <tr><td class="text-muted text-sm">Transform location</td><td style="font-weight:500">Before load (in Python)</td></tr>
+              <tr><td class="text-muted text-sm">Best for</td><td style="font-weight:500">Complex ML pipelines</td></tr>
+              <tr><td class="text-muted text-sm">Scalability</td><td style="font-weight:500">Medium (RAM-bound)</td></tr>
+              <tr><td class="text-muted text-sm">Time (1M rows)</td><td style="font-weight:500">~8.4 sec</td></tr>
+              <tr><td class="text-muted text-sm">Flexibility</td><td style="font-weight:500">High</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card accent-gold">
+          <h4 class="mb-2">ELT (SQL)</h4>
+          <table>
+            <tbody>
+              <tr><td class="text-muted text-sm">Transform location</td><td style="font-weight:500">Inside DB (after load)</td></tr>
+              <tr><td class="text-muted text-sm">Best for</td><td style="font-weight:500">Large-scale analytics</td></tr>
+              <tr><td class="text-muted text-sm">Scalability</td><td style="font-weight:500">Very high (DB engines)</td></tr>
+              <tr><td class="text-muted text-sm">Time (1M rows)</td><td style="font-weight:500">~2.1 sec</td></tr>
+              <tr><td class="text-muted text-sm">Flexibility</td><td style="font-weight:500">Medium</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Architecture -->
+    <div id="tab-arch" class="tab-pane">
+      <svg width="100%" viewBox="0 0 680 480" role="img">
+        <title>Airline Booking System Architecture</title>
+        <desc>Frontend connects to Flask API, which connects to SQLite DB and ETL/ELT pipeline, feeding an analytics layer.</desc>
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+        <!-- Frontend -->
+        <g class="c-blue">
+          <rect x="40" y="40" width="160" height="64" rx="10" stroke-width="0.5"/>
+          <text class="th" x="120" y="67" text-anchor="middle" dominant-baseline="central">Frontend</text>
+          <text class="ts" x="120" y="87" text-anchor="middle" dominant-baseline="central">React / HTML / JS</text>
+        </g>
+        <!-- Backend -->
+        <g class="c-purple">
+          <rect x="260" y="40" width="160" height="64" rx="10" stroke-width="0.5"/>
+          <text class="th" x="340" y="67" text-anchor="middle" dominant-baseline="central">Backend API</text>
+          <text class="ts" x="340" y="87" text-anchor="middle" dominant-baseline="central">Python / Flask</text>
+        </g>
+        <!-- Auth -->
+        <g class="c-coral">
+          <rect x="480" y="40" width="160" height="64" rx="10" stroke-width="0.5"/>
+          <text class="th" x="560" y="67" text-anchor="middle" dominant-baseline="central">Auth Service</text>
+          <text class="ts" x="560" y="87" text-anchor="middle" dominant-baseline="central">JWT / Sessions</text>
+        </g>
+        <!-- DB -->
+        <g class="c-teal">
+          <rect x="260" y="180" width="160" height="64" rx="10" stroke-width="0.5"/>
+          <text class="th" x="340" y="207" text-anchor="middle" dominant-baseline="central">Database</text>
+          <text class="ts" x="340" y="227" text-anchor="middle" dominant-baseline="central">SQLite / MySQL</text>
+        </g>
+        <!-- Tables row -->
+        <g class="c-gray">
+          <rect x="40" y="320" width="110" height="52" rx="8" stroke-width="0.5"/>
+          <text class="th" x="95" y="342" text-anchor="middle" dominant-baseline="central">users</text>
+          <text class="ts" x="95" y="360" text-anchor="middle" dominant-baseline="central">id, email, role</text>
+        </g>
+        <g class="c-gray">
+          <rect x="170" y="320" width="110" height="52" rx="8" stroke-width="0.5"/>
+          <text class="th" x="225" y="342" text-anchor="middle" dominant-baseline="central">flights</text>
+          <text class="ts" x="225" y="360" text-anchor="middle" dominant-baseline="central">route, price, time</text>
+        </g>
+        <g class="c-gray">
+          <rect x="300" y="320" width="110" height="52" rx="8" stroke-width="0.5"/>
+          <text class="th" x="355" y="342" text-anchor="middle" dominant-baseline="central">bookings</text>
+          <text class="ts" x="355" y="360" text-anchor="middle" dominant-baseline="central">user, flight, seat</text>
+        </g>
+        <g class="c-gray">
+          <rect x="430" y="320" width="110" height="52" rx="8" stroke-width="0.5"/>
+          <text class="th" x="485" y="342" text-anchor="middle" dominant-baseline="central">payments</text>
+          <text class="ts" x="485" y="360" text-anchor="middle" dominant-baseline="central">amount, status</text>
+        </g>
+        <!-- ETL -->
+        <g class="c-amber">
+          <rect x="40" y="180" width="160" height="64" rx="10" stroke-width="0.5"/>
+          <text class="th" x="120" y="207" text-anchor="middle" dominant-baseline="central">ETL Pipeline</text>
+          <text class="ts" x="120" y="227" text-anchor="middle" dominant-baseline="central">Pandas / Python</text>
+        </g>
+        <!-- Analytics -->
+        <g class="c-green">
+          <rect x="480" y="180" width="160" height="64" rx="10" stroke-width="0.5"/>
+          <text class="th" x="560" y="207" text-anchor="middle" dominant-baseline="central">Analytics Layer</text>
+          <text class="ts" x="560" y="227" text-anchor="middle" dominant-baseline="central">Chart.js / Reports</text>
+        </g>
+        <!-- Arrows -->
+        <line x1="200" y1="72" x2="258" y2="72" stroke="#378ADD" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="420" y1="72" x2="478" y2="72" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="340" y1="104" x2="340" y2="178" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="260" y1="212" x2="202" y2="212" stroke="#1D9E75" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="420" y1="212" x2="478" y2="212" stroke="#1D9E75" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="120" y1="244" x2="120" y2="300" stroke="#BA7517" stroke-width="1.5"/>
+        <line x1="120" y1="300" x2="340" y2="300" stroke="#BA7517" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="340" y1="244" x2="340" y2="318" stroke="#1D9E75" stroke-width="1.5" marker-end="url(#arr)"/>
+        <!-- Legend -->
+        <g class="c-blue"><rect x="40" y="420" width="10" height="10" rx="2"/></g><text class="ts" x="56" y="429" dominant-baseline="central">Frontend</text>
+        <g class="c-purple"><rect x="130" y="420" width="10" height="10" rx="2"/></g><text class="ts" x="146" y="429" dominant-baseline="central">Backend</text>
+        <g class="c-teal"><rect x="210" y="420" width="10" height="10" rx="2"/></g><text class="ts" x="226" y="429" dominant-baseline="central">Database</text>
+        <g class="c-amber"><rect x="300" y="420" width="10" height="10" rx="2"/></g><text class="ts" x="316" y="429" dominant-baseline="central">ETL</text>
+        <g class="c-green"><rect x="360" y="420" width="10" height="10" rx="2"/></g><text class="ts" x="376" y="429" dominant-baseline="central">Analytics</text>
+        <g class="c-coral"><rect x="450" y="420" width="10" height="10" rx="2"/></g><text class="ts" x="466" y="429" dominant-baseline="central">Auth</text>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE: SCHEMA ==================== -->
+<div id="page-schema" class="page">
+  <div class="app">
+    <div class="section-title">Database Schema <span>ER Diagram & Table Definitions</span></div>
+    <!-- ER Diagram -->
+    <div class="card mb-3">
+      <h3 class="mb-2">Entity Relationship Diagram</h3>
+      <svg width="100%" viewBox="0 0 680 260" role="img">
+        <title>ER Diagram for SkyBook</title>
+        <desc>Four tables: users, bookings, flights, payments with relationships shown.</desc>
+        <defs>
+          <marker id="arr2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+        <g class="c-blue">
+          <rect x="30" y="80" width="130" height="100" rx="10" stroke-width="0.5"/>
+          <text class="th" x="95" y="104" text-anchor="middle" dominant-baseline="central">users</text>
+          <text class="ts" x="95" y="124" text-anchor="middle" dominant-baseline="central">id PK, name</text>
+          <text class="ts" x="95" y="140" text-anchor="middle" dominant-baseline="central">email, role</text>
+          <text class="ts" x="95" y="156" text-anchor="middle" dominant-baseline="central">password_hash</text>
+        </g>
+        <g class="c-purple">
+          <rect x="270" y="60" width="140" height="140" rx="10" stroke-width="0.5"/>
+          <text class="th" x="340" y="84" text-anchor="middle" dominant-baseline="central">bookings</text>
+          <text class="ts" x="340" y="104" text-anchor="middle" dominant-baseline="central">id PK</text>
+          <text class="ts" x="340" y="120" text-anchor="middle" dominant-baseline="central">user_id FK</text>
+          <text class="ts" x="340" y="136" text-anchor="middle" dominant-baseline="central">flight_id FK</text>
+          <text class="ts" x="340" y="152" text-anchor="middle" dominant-baseline="central">seat, class</text>
+          <text class="ts" x="340" y="168" text-anchor="middle" dominant-baseline="central">status, amount</text>
+        </g>
+        <g class="c-teal">
+          <rect x="510" y="80" width="140" height="100" rx="10" stroke-width="0.5"/>
+          <text class="th" x="580" y="104" text-anchor="middle" dominant-baseline="central">flights</text>
+          <text class="ts" x="580" y="124" text-anchor="middle" dominant-baseline="central">id PK, flight_no</text>
+          <text class="ts" x="580" y="140" text-anchor="middle" dominant-baseline="central">origin, dest</text>
+          <text class="ts" x="580" y="156" text-anchor="middle" dominant-baseline="central">price, seats</text>
+        </g>
+        <g class="c-amber">
+          <rect x="270" y="215" width="140" height="32" rx="8" stroke-width="0.5"/>
+          <text class="th" x="340" y="231" text-anchor="middle" dominant-baseline="central">payments</text>
+        </g>
+        <!-- Relations -->
+        <line x1="160" y1="130" x2="268" y2="130" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#arr2)"/>
+        <text class="ts" x="214" y="122" text-anchor="middle">1 : N</text>
+        <line x1="410" y1="130" x2="508" y2="130" stroke="#0F6E56" stroke-width="1.5" marker-end="url(#arr2)"/>
+        <text class="ts" x="459" y="122" text-anchor="middle">N : 1</text>
+        <line x1="340" y1="200" x2="340" y2="213" stroke="#BA7517" stroke-width="1.5" marker-end="url(#arr2)"/>
+        <text class="ts" x="360" y="208" dominant-baseline="central">1:1</text>
+      </svg>
+    </div>
+    <!-- Table definitions -->
+    <div id="schema-tables"></div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div id="modal-flight" class="modal-bg" style="display:none" onclick="closeModalIfBg(event,'modal-flight')">
+  <div class="modal">
+    <div class="modal-title">Add / Edit Flight <button class="close-btn" onclick="closeModal('modal-flight')">×</button></div>
+    <div class="grid-2">
+      <div class="form-group"><label>Flight Number</label><input id="m-fno" placeholder="AI-234"/></div>
+      <div class="form-group"><label>Airline</label><select id="m-airline">
+        <option>Air India</option><option>IndiGo</option><option>SpiceJet</option>
+        <option>Vistara</option><option>GoAir</option><option>AirAsia India</option>
+      </select></div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group"><label>From</label><select id="m-from">
+        <option>DEL</option><option>BOM</option><option>BLR</option><option>MAA</option>
+        <option>HYD</option><option>CCU</option><option>JAI</option><option>AMD</option><option>GOI</option>
+      </select></div>
+      <div class="form-group"><label>To</label><select id="m-to">
+        <option>BOM</option><option>DEL</option><option>BLR</option><option>MAA</option>
+        <option>HYD</option><option>CCU</option><option>JAI</option><option>AMD</option><option>GOI</option>
+      </select></div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group"><label>Departure</label><input id="m-dep" type="datetime-local" value="2025-05-15T08:30"/></div>
+      <div class="form-group"><label>Arrival</label><input id="m-arr" type="datetime-local" value="2025-05-15T10:45"/></div>
+    </div>
+    <div class="grid-2">
+      <div class="form-group"><label>Price (₹)</label><input id="m-price" type="number" placeholder="4999" value="4999"/></div>
+      <div class="form-group"><label>Seats Available</label><input id="m-seats" type="number" placeholder="120" value="120"/></div>
+    </div>
+    <div class="flex gap-3 mt-2 justify-between">
+      <button class="btn ghost" onclick="closeModal('modal-flight')">Cancel</button>
+      <button class="btn" onclick="saveFlight()">Save Flight</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal-booking" class="modal-bg" style="display:none" onclick="closeModalIfBg(event,'modal-booking')">
+  <div class="modal">
+    <div class="modal-title">Booking Details <button class="close-btn" onclick="closeModal('modal-booking')">×</button></div>
+    <div id="modal-booking-content"></div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// DATA STORE
+// ─────────────────────────────────────────────
+const AIRLINES = {
+  'Air India': {color:'#e32f35',abbr:'AI'},
+  'IndiGo': {color:'#1a5276',abbr:'6E'},
+  'SpiceJet': {color:'#e74c3c',abbr:'SG'},
+  'Vistara': {color:'#6a4398',abbr:'UK'},
+  'GoAir': {color:'#0078d7',abbr:'G8'},
+  'AirAsia India': {color:'#d0021b',abbr:'I5'}
+};
+
+let flights = [
+  {id:1,no:'AI-201',airline:'Air India',from:'DEL',to:'BOM',dep:'2025-05-15T06:00',arr:'2025-05-15T08:15',price:3499,seats:48,status:'On Time'},
+  {id:2,no:'6E-505',airline:'IndiGo',from:'DEL',to:'BOM',dep:'2025-05-15T09:30',arr:'2025-05-15T11:45',price:2899,seats:122,status:'On Time'},
+  {id:3,no:'SG-301',airline:'SpiceJet',from:'DEL',to:'BOM',dep:'2025-05-15T14:20',arr:'2025-05-15T16:35',price:2299,seats:73,status:'On Time'},
+  {id:4,no:'UK-835',airline:'Vistara',from:'DEL',to:'BOM',dep:'2025-05-15T18:00',arr:'2025-05-15T20:15',price:5499,seats:35,status:'On Time'},
+  {id:5,no:'6E-721',airline:'IndiGo',from:'BOM',to:'BLR',dep:'2025-05-15T07:10',arr:'2025-05-15T08:40',price:1899,seats:156,status:'On Time'},
+  {id:6,no:'AI-441',airline:'Air India',from:'BOM',to:'BLR',dep:'2025-05-15T12:00',arr:'2025-05-15T13:30',price:2699,seats:82,status:'Delayed'},
+  {id:7,no:'G8-115',airline:'GoAir',from:'BLR',to:'MAA',dep:'2025-05-15T10:00',arr:'2025-05-15T11:10',price:1499,seats:94,status:'On Time'},
+  {id:8,no:'I5-320',airline:'AirAsia India',from:'DEL',to:'GOI',dep:'2025-05-15T08:00',arr:'2025-05-15T10:20',price:3199,seats:61,status:'On Time'},
+  {id:9,no:'UK-601',airline:'Vistara',from:'HYD',to:'DEL',dep:'2025-05-15T15:30',arr:'2025-05-15T18:00',price:4299,seats:44,status:'On Time'},
+  {id:10,no:'6E-881',airline:'IndiGo',from:'MAA',to:'CCU',dep:'2025-05-15T11:45',arr:'2025-05-15T14:05',price:3799,seats:98,status:'On Time'},
+];
+let flightIdSeq = 11;
+
+let users = [
+  {id:1,name:'Riya Sharma',email:'user@skybook.com',pass:'password',role:'user'},
+  {id:2,name:'Admin User',email:'admin@skybook.com',pass:'admin',role:'admin'},
+];
+let currentUser = null;
+
+let bookings = [
+  {id:'BK001',userId:1,flightId:1,seat:'14A',cls:'Economy',amount:3499,status:'Confirmed',date:'2025-04-10'},
+  {id:'BK002',userId:1,flightId:5,seat:'3C',cls:'Business',amount:7999,status:'Confirmed',date:'2025-04-18'},
+];
+let bookingIdSeq = 3;
+
+let selectedFlight = null;
+let selectedSeat = null;
+let searchResults = [];
+
+// ─────────────────────────────────────────────
+// AUTH
+// ─────────────────────────────────────────────
+function doLogin() {
+  const email = document.getElementById('login-email').value;
+  const pass  = document.getElementById('login-pass').value;
+  const user  = users.find(u => u.email === email && u.pass === pass);
+  if (!user) { toast('❌ Invalid credentials'); return; }
+  currentUser = user;
+  updateAuthUI();
+  showPage('search');
+  toast(`✈ Welcome back, ${user.name.split(' ')[0]}!`);
+}
+function doRegister() {
+  const fname = document.getElementById('reg-fname').value;
+  const lname = document.getElementById('reg-lname').value;
+  const email = document.getElementById('reg-email').value;
+  const pass  = document.getElementById('reg-pass').value;
+  if (!fname||!email||!pass) { toast('❌ Fill all fields'); return; }
+  const newUser = {id: users.length+1, name:`${fname} ${lname}`, email, pass, role:'user'};
+  users.push(newUser);
+  currentUser = newUser;
+  updateAuthUI();
+  showPage('search');
+  toast(`✅ Account created! Welcome, ${fname}!`);
+}
+function doLogout() {
+  currentUser = null;
+  updateAuthUI();
+  showPage('search');
+  toast('Signed out successfully');
+}
+function updateAuthUI() {
+  const area = document.getElementById('auth-area');
+  const adminBtn = document.getElementById('admin-nav-btn');
+  if (currentUser) {
+    const initials = currentUser.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    area.innerHTML = `<div class="user-chip" style="cursor:pointer" onclick="doLogout()">
+      <div class="avatar">${initials}</div>
+      <span style="font-size:13px;color:#fff">${currentUser.name.split(' ')[0]}</span>
+      <span style="font-size:11px;color:rgba(255,255,255,.5)">Sign out</span></div>`;
+    adminBtn.style.display = currentUser.role === 'admin' ? '' : 'none';
+  } else {
+    area.innerHTML = `<button class="btn sm ghost" onclick="showPage('auth')" style="color:rgba(255,255,255,.8);border-color:rgba(255,255,255,.25)">Sign In</button>`;
+    adminBtn.style.display = 'none';
+  }
+}
+function switchAuthTab(tab, btn) {
+  document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('auth-login').style.display   = tab==='login'    ? '' : 'none';
+  document.getElementById('auth-register').style.display = tab==='register' ? '' : 'none';
+}
+
+// ─────────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  const pg = document.getElementById('page-'+id);
+  if (pg) pg.classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>{
+    if(b.getAttribute('onclick') && b.getAttribute('onclick').includes(`'${id}'`)) b.classList.add('active');
+  });
+  if(id==='admin') renderAdmin();
+  if(id==='analytics') renderAnalytics();
+  if(id==='schema') renderSchema();
+  if(id==='bookings') renderBookings();
+  if(id==='pipeline') renderComparChart();
+}
+
+// ─────────────────────────────────────────────
+// FLIGHT SEARCH
+// ─────────────────────────────────────────────
+function searchFlights() {
+  const src = document.getElementById('src').value;
+  const dst = document.getElementById('dst').value;
+  searchResults = flights.filter(f => f.from===src && f.to===dst);
+  renderFlightList(searchResults);
+  document.getElementById('results-section').style.display = 'block';
+  document.getElementById('results-count').textContent = `(${searchResults.length} found)`;
+  document.getElementById('seat-section').style.display = 'none';
+}
+function filterFlights(type, el) {
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  let list = [...searchResults];
+  if (type==='morning') list = list.filter(f=>parseInt(f.dep.split('T')[1])<12);
+  if (type==='evening') list = list.filter(f=>parseInt(f.dep.split('T')[1])>=15);
+  renderFlightList(list);
+}
+function sortPrice(el) {
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  const sorted = [...searchResults].sort((a,b)=>a.price-b.price);
+  renderFlightList(sorted);
+}
+function renderFlightList(list) {
+  const container = document.getElementById('flight-list');
+  if (!list.length) { container.innerHTML=`<div class="empty-state"><div class="icon">🔍</div><p>No flights found for this route.</p></div>`; return; }
+  container.innerHTML = list.map(f => {
+    const al = AIRLINES[f.airline]||{color:'#666',abbr:'??'};
+    const dep = f.dep.split('T')[1]; const arr = f.arr.split('T')[1];
+    const status = f.status==='Delayed' ? 'badge red' : 'badge green';
+    return `<div class="flight-card" id="fc-${f.id}" onclick="selectFlight(${f.id})">
+      <div class="flex align-center gap-3">
+        <div class="airline-logo" style="background:${al.color}">${al.abbr}</div>
+        <div><div style="font-size:13px;font-weight:600">${f.airline}</div><div class="text-xs text-muted">${f.no}</div></div>
+      </div>
+      <div><div class="time-big">${dep}</div><div class="city-code">${f.from}</div></div>
+      <div class="route-line"><div class="line"></div></div>
+      <div style="text-align:right"><div class="time-big">${arr}</div><div class="city-code">${f.to}</div></div>
+      <div style="text-align:right">
+        <div class="price-big">₹${f.price.toLocaleString()}</div>
+        <div class="flex gap-2 justify-end mt-1">
+          <span class="${status}">${f.status}</span>
+          <span class="badge blue">${f.seats} seats</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function selectFlight(id) {
+  document.querySelectorAll('.flight-card').forEach(c=>c.classList.remove('selected'));
+  const el = document.getElementById('fc-'+id);
+  if (el) el.classList.add('selected');
+  selectedFlight = flights.find(f=>f.id===id);
+  if (!selectedFlight) return;
+  showSeatSection();
+}
+
+// ─────────────────────────────────────────────
+// SEAT MAP
+// ─────────────────────────────────────────────
+function showSeatSection() {
+  document.getElementById('results-section').style.display = 'none';
+  document.getElementById('seat-section').style.display = 'block';
+  selectedSeat = null;
+  renderSeatInfo();
+  renderSeatMap();
+  updateBookingSummary();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function hideSeatSection() {
+  document.getElementById('seat-section').style.display = 'none';
+  document.getElementById('results-section').style.display = 'block';
+}
+function renderSeatInfo() {
+  const f = selectedFlight;
+  const al = AIRLINES[f.airline]||{color:'#666',abbr:'??'};
+  document.getElementById('selected-flight-info').innerHTML = `
+    <div class="flex align-center gap-3">
+      <div class="airline-logo" style="background:${al.color};width:44px;height:44px">${al.abbr}</div>
+      <div>
+        <div style="font-weight:600">${f.airline} · ${f.no}</div>
+        <div class="text-sm text-muted">${f.from} → ${f.to}</div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="grid-3 text-sm">
+      <div><div class="text-muted">Departure</div><div style="font-weight:500">${f.dep.split('T')[1]}</div></div>
+      <div><div class="text-muted">Arrival</div><div style="font-weight:500">${f.arr.split('T')[1]}</div></div>
+      <div><div class="text-muted">Base Price</div><div style="font-weight:500;color:var(--sky)">₹${f.price.toLocaleString()}</div></div>
+    </div>`;
+}
+function renderSeatMap() {
+  const map = document.getElementById('seat-map');
+  const cols = ['A','B','C','','D','E','F'];
+  const rows = 20;
+  const taken = generateTakenSeats();
+  let html = '';
+  // Header row
+  cols.forEach((c,i)=>{
+    if(!c) html += `<div style="background:transparent;border:none"></div>`;
+    else html += `<div style="text-align:center;font-size:11px;color:var(--txt3);font-weight:600">${c}</div>`;
+  });
+  for(let r=1;r<=rows;r++){
+    cols.forEach((c,i)=>{
+      if(!c){ html+=`<div class="seat aisle"><span style="font-size:10px;color:var(--txt3)">${r}</span></div>`;return;}
+      const seatId = `${r}${c}`;
+      const isTaken = taken.includes(seatId);
+      const isBiz = r<=3;
+      const cls = `seat ${isBiz?'business':''} ${isTaken?'taken':'avail'}`;
+      html += `<div class="${cls}" id="seat-${seatId}" onclick="${isTaken?'':'selectSeat(\''+seatId+'\','+isBiz+')'}">${seatId}</div>`;
+    });
+  }
+  map.innerHTML = html;
+}
+function generateTakenSeats() {
+  const taken = [];
+  const cols = ['A','B','C','D','E','F'];
+  for(let r=1;r<=20;r++){
+    cols.forEach(c=>{
+      if(Math.random()<0.35) taken.push(`${r}${c}`);
+    });
+  }
+  return taken;
+}
+function selectSeat(seatId, isBiz) {
+  if(selectedSeat){
+    const old = document.getElementById('seat-'+selectedSeat);
+    if(old){ old.classList.remove('selected'); old.classList.add('avail'); }
+  }
+  selectedSeat = seatId;
+  const el = document.getElementById('seat-'+seatId);
+  if(el){ el.classList.remove('avail'); el.classList.add('selected'); }
+  document.getElementById('chosen-seat').textContent = seatId;
+  document.getElementById('chosen-class').textContent = isBiz ? 'Business' : 'Economy';
+  const mult = isBiz ? 2.3 : 1;
+  const total = Math.round(selectedFlight.price * mult);
+  document.getElementById('total-price').textContent = `₹${total.toLocaleString()}`;
+  const btn = document.getElementById('confirm-btn');
+  btn.disabled = false; btn.style.opacity = 1;
+  updateBookingSummary();
+}
+function updateBookingSummary() {
+  const f = selectedFlight;
+  document.getElementById('booking-summary').innerHTML = `
+    <div class="flex justify-between text-sm mb-1"><span class="text-muted">Route</span><span>${f.from} → ${f.to}</span></div>
+    <div class="flex justify-between text-sm mb-1"><span class="text-muted">Date</span><span>${f.dep.split('T')[0]}</span></div>
+    <div class="flex justify-between text-sm"><span class="text-muted">Base fare</span><span>₹${f.price.toLocaleString()}</span></div>`;
+}
+function confirmBooking() {
+  if(!selectedSeat) return;
+  if(!currentUser){ showPage('auth'); toast('Please sign in to book'); return; }
+  const isBiz = parseInt(selectedSeat)<4;
+  const total = Math.round(selectedFlight.price * (isBiz ? 2.3 : 1));
+  const id = `BK${String(bookingIdSeq++).padStart(3,'0')}`;
+  bookings.push({id, userId:currentUser.id, flightId:selectedFlight.id, seat:selectedSeat,
+    cls:isBiz?'Business':'Economy', amount:total, status:'Confirmed', date:new Date().toISOString().split('T')[0]});
+  selectedFlight.seats = Math.max(0, selectedFlight.seats-1);
+  showConfirmation(id, total);
+}
+function showConfirmation(bookingId, amount) {
+  const f = selectedFlight;
+  document.getElementById('seat-section').innerHTML = `
+    <div class="confirm-card"><div class="confirm-icon">✅</div>
+      <h2 style="color:#fff;font-size:26px">Booking Confirmed!</h2>
+      <p style="color:rgba(255,255,255,.7);margin-top:8px">Your booking ID: <strong>${bookingId}</strong></p>
+    </div>
+    <div class="ticket mb-3">
+      <div class="ticket-top">
+        <div><div style="font-size:13px;opacity:.7">Boarding Pass</div><div style="font-size:22px;font-weight:700;font-family:'Syne',sans-serif">${f.no}</div></div>
+        <div style="text-align:right"><div style="font-size:13px;opacity:.7">${AIRLINES[f.airline]?.abbr||'??'}</div><div style="font-size:14px;font-weight:500">${f.airline}</div></div>
+      </div>
+      <div class="ticket-body">
+        <div class="ticket-field"><label>From</label><span style="font-size:28px;font-weight:700;font-family:'Syne',sans-serif">${f.from}</span></div>
+        <div class="ticket-field" style="text-align:center"><label>Date</label><span>${f.dep.split('T')[0]}</span></div>
+        <div class="ticket-field" style="text-align:right"><label>To</label><span style="font-size:28px;font-weight:700;font-family:'Syne',sans-serif">${f.to}</span></div>
+      </div>
+      <hr class="ticket-divider"/>
+      <div class="ticket-body">
+        <div class="ticket-field"><label>Departure</label><span>${f.dep.split('T')[1]}</span></div>
+        <div class="ticket-field" style="text-align:center"><label>Seat</label><span>${selectedSeat}</span></div>
+        <div class="ticket-field" style="text-align:right"><label>Amount Paid</label><span>₹${amount.toLocaleString()}</span></div>
+      </div>
+    </div>
+    <div class="flex gap-3">
+      <button class="btn ghost" onclick="hideSeatSection();showPage('search')">Search More</button>
+      <button class="btn" onclick="showPage('bookings')">View My Bookings →</button>
+    </div>`;
+  toast(`🎉 Booking ${bookingId} confirmed!`);
+}
+
+// ─────────────────────────────────────────────
+// MY BOOKINGS
+// ─────────────────────────────────────────────
+function renderBookings() {
+  const list = document.getElementById('bookings-list');
+  if(!currentUser){ list.innerHTML=`<div class="empty-state"><div class="icon">🔐</div><p>Please sign in to view your bookings.</p><button class="btn mt-2" onclick="showPage('auth')">Sign In</button></div>`; return; }
+  const mine = bookings.filter(b=>b.userId===currentUser.id);
+  if(!mine.length){ list.innerHTML=`<div class="empty-state"><div class="icon">✈️</div><p>No bookings yet.</p><button class="btn mt-2" onclick="showPage('search')">Search Flights</button></div>`; return; }
+  list.innerHTML = mine.map(b=>{
+    const f = flights.find(fl=>fl.id===b.flightId)||{no:'?',from:'?',to:'?',dep:'?',airline:'?'};
+    const al = AIRLINES[f.airline]||{color:'#666',abbr:'??'};
+    return `<div class="card mb-2" style="cursor:pointer" onclick="viewBooking('${b.id}')">
+      <div class="flex justify-between align-center">
+        <div class="flex align-center gap-3">
+          <div class="airline-logo" style="background:${al.color};width:40px;height:40px;font-size:14px">${al.abbr}</div>
+          <div>
+            <div style="font-weight:600">${f.from} → ${f.to}</div>
+            <div class="text-sm text-muted">${f.airline} · ${f.no} · ${b.date}</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div class="badge green mb-1">${b.status}</div>
+          <div style="font-size:12px;color:var(--txt3)">Seat ${b.seat} · ${b.cls}</div>
+        </div>
+        <div style="text-align:right;min-width:90px">
+          <div style="font-size:20px;font-weight:700;color:var(--sky);font-family:'Syne',sans-serif">₹${b.amount.toLocaleString()}</div>
+          <div style="font-size:11px;color:var(--txt3)">${b.id}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function viewBooking(id) {
+  const b = bookings.find(x=>x.id===id);
+  const f = b ? flights.find(fl=>fl.id===b.flightId)||{} : {};
+  document.getElementById('modal-booking-content').innerHTML = `
+    <div class="grid-2 mb-2">
+      <div class="form-group"><label>Booking ID</label><input value="${b.id}" readonly style="background:var(--bg)"/></div>
+      <div class="form-group"><label>Status</label><input value="${b.status}" readonly style="background:var(--bg)"/></div>
+    </div>
+    <div class="grid-2 mb-2">
+      <div class="form-group"><label>Flight</label><input value="${f.no||'?'} (${f.airline||'?'})" readonly style="background:var(--bg)"/></div>
+      <div class="form-group"><label>Route</label><input value="${f.from||'?'} → ${f.to||'?'}" readonly style="background:var(--bg)"/></div>
+    </div>
+    <div class="grid-2 mb-2">
+      <div class="form-group"><label>Seat</label><input value="${b.seat}" readonly style="background:var(--bg)"/></div>
+      <div class="form-group"><label>Class</label><input value="${b.cls}" readonly style="background:var(--bg)"/></div>
+    </div>
+    <div class="form-group"><label>Amount Paid</label><input value="₹${b.amount.toLocaleString()}" readonly style="background:var(--bg);font-weight:600;color:var(--sky)"/></div>
+    <div class="flex justify-between mt-3">
+      <button class="btn red sm" onclick="cancelBooking('${b.id}')">Cancel Booking</button>
+      <button class="btn ghost sm" onclick="closeModal('modal-booking')">Close</button>
+    </div>`;
+  document.getElementById('modal-booking').style.display = 'flex';
+}
+function cancelBooking(id) {
+  const b = bookings.find(x=>x.id===id);
+  if(b){ b.status='Cancelled'; }
+  closeModal('modal-booking');
+  renderBookings();
+  toast('Booking cancelled successfully');
+}
+
+// ─────────────────────────────────────────────
+// ADMIN
+// ─────────────────────────────────────────────
+function renderAdmin() {
+  const revenue = bookings.reduce((s,b)=>s+b.amount,0);
+  document.getElementById('admin-stats').innerHTML = [
+    {label:'Total Flights',val:flights.length,trend:'+2 this week',up:true,color:'sky'},
+    {label:'Total Bookings',val:bookings.length,trend:`+${bookings.filter(b=>b.date===new Date().toISOString().split('T')[0]).length} today`,up:true,color:'mint'},
+    {label:'Total Revenue',val:'₹'+revenue.toLocaleString(),trend:'+12% vs last month',up:true,color:'gold'},
+    {label:'Avg. Load Factor',val:'74%',trend:'+3% this month',up:true,color:'purple'},
+  ].map(s=>`<div class="stat-card"><div class="stat-num">${s.val}</div><div class="stat-label">${s.label}</div>
+    <div class="stat-trend trend-up">↑ ${s.trend}</div></div>`).join('');
+  renderAdminFlights();
+}
+function renderAdminFlights() {
+  const q = (document.getElementById('admin-search')||{}).value?.toLowerCase()||'';
+  const tbody = document.getElementById('admin-table');
+  const list = flights.filter(f => !q || f.no.toLowerCase().includes(q)||f.airline.toLowerCase().includes(q)||f.from.includes(q.toUpperCase())||f.to.includes(q.toUpperCase()));
+  tbody.innerHTML = list.map(f=>`<tr>
+    <td><span style="font-weight:600">${f.no}</span></td>
+    <td>${f.from} → ${f.to}</td>
+    <td style="font-size:13px">${f.dep.replace('T',' ')}</td>
+    <td>${f.airline}</td>
+    <td>₹${f.price.toLocaleString()}</td>
+    <td>${f.seats}</td>
+    <td><span class="badge ${f.status==='Delayed'?'red':'green'}">${f.status}</span></td>
+    <td>
+      <div class="flex gap-2">
+        <button class="btn ghost sm" onclick="openEditFlight(${f.id})">Edit</button>
+        <button class="btn sm" style="background:var(--red)" onclick="deleteFlight(${f.id})">Del</button>
+      </div>
+    </td></tr>`).join('');
+}
+function openAddFlight() {
+  document.getElementById('m-fno').value='';
+  document.getElementById('modal-flight')._editId = null;
+  document.getElementById('modal-flight').style.display='flex';
+}
+function openEditFlight(id) {
+  const f = flights.find(fl=>fl.id===id);
+  if(!f) return;
+  document.getElementById('m-fno').value = f.no;
+  document.getElementById('m-airline').value = f.airline;
+  document.getElementById('m-from').value = f.from;
+  document.getElementById('m-to').value = f.to;
+  document.getElementById('m-dep').value = f.dep;
+  document.getElementById('m-arr').value = f.arr;
+  document.getElementById('m-price').value = f.price;
+  document.getElementById('m-seats').value = f.seats;
+  document.getElementById('modal-flight')._editId = id;
+  document.getElementById('modal-flight').style.display='flex';
+}
+function saveFlight() {
+  const editId = document.getElementById('modal-flight')._editId;
+  const obj = {
+    no:document.getElementById('m-fno').value||'XX-000',
+    airline:document.getElementById('m-airline').value,
+    from:document.getElementById('m-from').value,
+    to:document.getElementById('m-to').value,
+    dep:document.getElementById('m-dep').value,
+    arr:document.getElementById('m-arr').value,
+    price:parseInt(document.getElementById('m-price').value)||4999,
+    seats:parseInt(document.getElementById('m-seats').value)||120,
+    status:'On Time',
+  };
+  if(editId){
+    const idx = flights.findIndex(f=>f.id===editId);
+    if(idx>-1) flights[idx] = {...flights[idx],...obj};
+    toast('✅ Flight updated');
+  } else {
+    flights.push({id:flightIdSeq++,...obj});
+    toast('✅ Flight added');
+  }
+  closeModal('modal-flight');
+  renderAdminFlights();
+}
+function deleteFlight(id) {
+  flights = flights.filter(f=>f.id!==id);
+  renderAdminFlights();
+  toast('Flight deleted');
+}
+
+// ─────────────────────────────────────────────
+// ANALYTICS CHARTS
+// ─────────────────────────────────────────────
+let analyticsCharts = {};
+function renderAnalytics() {
+  const revenue = bookings.reduce((s,b)=>s+b.amount,0);
+  const routes = [...new Set(flights.map(f=>`${f.from}→${f.to}`))].length;
+  document.getElementById('analytics-stats').innerHTML = [
+    {label:'Total Revenue',val:'₹'+revenue.toLocaleString()},
+    {label:'Total Bookings',val:bookings.length},
+    {label:'Active Routes',val:routes},
+    {label:'Airlines',val:Object.keys(AIRLINES).length},
+  ].map(s=>`<div class="stat-card"><div class="stat-num">${s.val}</div><div class="stat-label">${s.label}</div></div>`).join('');
+
+  setTimeout(()=>{
+    drawRevenueChart();
+    drawAirlineChart();
+    drawRoutesChart();
+    drawHoursChart();
+  },50);
+}
+function destroyChart(id) {
+  if(analyticsCharts[id]){ analyticsCharts[id].destroy(); delete analyticsCharts[id]; }
+}
+function drawRevenueChart() {
+  destroyChart('revenue');
+  const ctx = document.getElementById('chart-revenue').getContext('2d');
+  analyticsCharts['revenue'] = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+      datasets:[{label:'Revenue (₹)',data:[120000,145000,132000,168000,189000,210000,195000,220000,240000,198000,215000,265000],
+        borderColor:'#2c7be5',backgroundColor:'rgba(44,123,229,.12)',pointBackgroundColor:'#2c7be5',
+        tension:.4,fill:true,borderWidth:2,pointRadius:4,pointBorderWidth:0}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{grid:{color:'rgba(120,130,150,.1)'},ticks:{callback:v=>'₹'+Math.round(v/1000)+'K',font:{size:11}}},
+               x:{grid:{color:'rgba(120,130,150,.08)'},ticks:{font:{size:11}}}}}
+  });
+}
+function drawAirlineChart() {
+  destroyChart('airline');
+  const ctx = document.getElementById('chart-airline').getContext('2d');
+  const counts = {};
+  flights.forEach(f=>{ counts[f.airline]=(counts[f.airline]||0)+1; });
+  analyticsCharts['airline'] = new Chart(ctx, {
+    type:'doughnut',
+    data:{
+      labels:Object.keys(counts),
+      datasets:[{data:Object.values(counts),
+        backgroundColor:['#2c7be5','#1a5276','#e32f35','#6a4398','#0078d7','#d0021b'],
+        borderWidth:2,borderColor:'var(--card,#fff)'}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11},padding:12}}}}
+  });
+}
+function drawRoutesChart() {
+  destroyChart('routes');
+  const ctx = document.getElementById('chart-routes').getContext('2d');
+  const top = [
+    {route:'DEL→BOM',count:342},{route:'BOM→BLR',count:287},{route:'DEL→GOI',count:245},
+    {route:'BLR→MAA',count:198},{route:'HYD→DEL',count:176}
+  ];
+  analyticsCharts['routes'] = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels:top.map(r=>r.route),
+      datasets:[{label:'Bookings',data:top.map(r=>r.count),
+        backgroundColor:'rgba(0,201,167,.75)',borderRadius:6,borderSkipped:false}]
+    },
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:'rgba(120,130,150,.08)'},ticks:{font:{size:11}}},
+               y:{grid:{display:false},ticks:{font:{size:11}}}}}
+  });
+}
+function drawHoursChart() {
+  destroyChart('hours');
+  const ctx = document.getElementById('chart-hours').getContext('2d');
+  const hours = Array.from({length:24},(_,i)=>i);
+  const vals = [3,1,1,2,5,12,28,45,38,32,25,30,42,35,28,20,38,55,62,48,35,22,12,6];
+  analyticsCharts['hours'] = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels:hours.map(h=>`${String(h).padStart(2,'0')}:00`),
+      datasets:[{label:'Bookings',data:vals,
+        backgroundColor:vals.map(v=>v>50?'rgba(245,166,35,.9)':v>30?'rgba(44,123,229,.75)':'rgba(44,123,229,.35)'),
+        borderRadius:4,borderSkipped:false}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{grid:{color:'rgba(120,130,150,.08)'},ticks:{font:{size:10}}},
+               x:{grid:{display:false},ticks:{maxRotation:45,font:{size:9},autoSkip:true,maxTicksLimit:12}}}}
+  });
+}
+function renderComparChart() {
+  setTimeout(()=>{
+    destroyChart('compare');
+    const ctx = document.getElementById('chart-compare');
+    if(!ctx) return;
+    analyticsCharts['compare'] = new Chart(ctx.getContext('2d'), {
+      type:'bar',
+      data:{
+        labels:['100K rows','500K rows','1M rows','5M rows'],
+        datasets:[
+          {label:'ETL (Pandas)',data:[1.2,3.8,8.4,42.1],backgroundColor:'rgba(44,123,229,.8)',borderRadius:6,borderSkipped:false},
+          {label:'ELT (SQL)',data:[0.4,1.1,2.1,9.8],backgroundColor:'rgba(0,201,167,.8)',borderRadius:6,borderSkipped:false}
+        ]
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'top',labels:{font:{size:12},padding:16}}},
+        scales:{y:{title:{display:true,text:'Time (seconds)',font:{size:11}},
+          grid:{color:'rgba(120,130,150,.08)'},ticks:{font:{size:11}}},
+          x:{grid:{display:false},ticks:{font:{size:11}}}}}
+    });
+  },50);
+}
+
+// ─────────────────────────────────────────────
+// SCHEMA
+// ─────────────────────────────────────────────
+const SCHEMA = [
+  {name:'users',icon:'👤',fields:[
+    {n:'id',t:'INTEGER',d:'Primary key, auto-increment',pk:true},
+    {n:'name',t:'VARCHAR(100)',d:'Full name of the user'},
+    {n:'email',t:'VARCHAR(255)',d:'Unique email address'},
+    {n:'password_hash',t:'VARCHAR(255)',d:'Bcrypt hashed password'},
+    {n:'role',t:'ENUM',d:"'user' or 'admin'"},
+    {n:'created_at',t:'DATETIME',d:'Account creation timestamp'},
+  ]},
+  {name:'flights',icon:'✈️',fields:[
+    {n:'id',t:'INTEGER',d:'Primary key',pk:true},
+    {n:'flight_no',t:'VARCHAR(20)',d:'IATA flight number e.g. AI-201'},
+    {n:'airline',t:'VARCHAR(100)',d:'Airline name'},
+    {n:'origin',t:'CHAR(3)',d:'IATA airport code (origin)'},
+    {n:'destination',t:'CHAR(3)',d:'IATA airport code (destination)'},
+    {n:'departure',t:'DATETIME',d:'Scheduled departure UTC'},
+    {n:'arrival',t:'DATETIME',d:'Scheduled arrival UTC'},
+    {n:'price',t:'DECIMAL(10,2)',d:'Base economy fare in INR'},
+    {n:'seats_total',t:'INTEGER',d:'Total seat capacity'},
+    {n:'seats_available',t:'INTEGER',d:'Remaining seats'},
+    {n:'status',t:'VARCHAR(20)',d:"'On Time', 'Delayed', 'Cancelled'"},
+  ]},
+  {name:'bookings',icon:'🎫',fields:[
+    {n:'id',t:'VARCHAR(10)',d:'Booking ID e.g. BK001',pk:true},
+    {n:'user_id',t:'INTEGER',d:'FK → users.id'},
+    {n:'flight_id',t:'INTEGER',d:'FK → flights.id'},
+    {n:'seat',t:'VARCHAR(4)',d:'Seat number e.g. 14A'},
+    {n:'class',t:'VARCHAR(20)',d:"'Economy' or 'Business'"},
+    {n:'amount',t:'DECIMAL(10,2)',d:'Total amount paid'},
+    {n:'status',t:'VARCHAR(20)',d:"'Confirmed', 'Cancelled'"},
+    {n:'booked_at',t:'DATETIME',d:'Booking timestamp UTC'},
+  ]},
+  {name:'payments',icon:'💳',fields:[
+    {n:'id',t:'INTEGER',d:'Primary key',pk:true},
+    {n:'booking_id',t:'VARCHAR(10)',d:'FK → bookings.id'},
+    {n:'amount',t:'DECIMAL(10,2)',d:'Amount charged'},
+    {n:'method',t:'VARCHAR(20)',d:"'card', 'upi', 'netbanking'"},
+    {n:'status',t:'VARCHAR(20)',d:"'success', 'failed', 'pending'"},
+    {n:'txn_id',t:'VARCHAR(64)',d:'Payment gateway transaction ID'},
+    {n:'paid_at',t:'DATETIME',d:'Payment timestamp'},
+  ]},
+];
+function renderSchema() {
+  document.getElementById('schema-tables').innerHTML = SCHEMA.map(tbl=>`
+    <div class="schema-table mb-3">
+      <div class="schema-header">${tbl.icon} ${tbl.name}
+        ${tbl.fields.some(f=>f.pk)?`<span class="pk-badge" style="margin-left:auto">PK</span>`:''}
+      </div>
+      ${tbl.fields.map(f=>`<div class="schema-field">
+        <div class="field-name">${f.n}${f.pk?' 🔑':''}</div>
+        <div class="field-type">${f.t}</div>
+        <div class="field-desc">${f.d}</div>
+      </div>`).join('')}
+    </div>`).join('');
+}
+
+// ─────────────────────────────────────────────
+// UTILITIES
+// ─────────────────────────────────────────────
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  const pane = document.getElementById('tab-'+id);
+  if(pane) pane.classList.add('active');
+  if(id==='compare') renderComparChart();
+}
+function closeModal(id) { document.getElementById(id).style.display='none'; }
+function closeModalIfBg(e, id) { if(e.target.classList.contains('modal-bg')) closeModal(id); }
+function openAddFlight() {
+  document.getElementById('m-fno').value=''; document.getElementById('m-price').value=4999;
+  document.getElementById('m-seats').value=120; document.getElementById('modal-flight')._editId=null;
+  document.getElementById('modal-flight').style.display='flex';
+}
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'),3000);
+}
+
+// Trigger initial search on load
+setTimeout(()=>{ searchFlights(); },100);
+</script>
+</body>
+</html>
